@@ -39,7 +39,7 @@ public class Locator : MonoBehaviour
 
     private float GetOffsetFromBottomToPivot()
     {
-        var bounds = target.GetComponent<MeshFilter>().mesh.bounds;     
+        var bounds = target.GetComponent<MeshFilter>().sharedMesh.bounds;        
         return (bounds.extents.y - bounds.center.y) * target.transform.localScale.y;
     }
 
@@ -51,7 +51,7 @@ public class Locator : MonoBehaviour
 
     private float GetOffsetFromPivotToTop()
     {
-        var bounds = target.GetComponent<MeshFilter>().mesh.bounds;
-        return (bounds.extents.y + bounds.center.y) * target.transform.localScale.y;
+        var bounds = target.GetComponent<MeshFilter>().sharedMesh.bounds;
+        return (bounds.center.y - (-bounds.extents.y)) * target.transform.localScale.y;
     }
 }
