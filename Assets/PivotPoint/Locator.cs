@@ -17,7 +17,7 @@ public class Locator : MonoBehaviour
                 var hitObject = hit.collider.gameObject;
                 if(hitObject.name == "Ceiling")
                 {
-
+                    LocateOnTheCeiling(hit.point);
                 }
                 else if(hitObject.name == "Floor")
                 {
@@ -33,16 +33,25 @@ public class Locator : MonoBehaviour
 
     private void LocateOnTheFloor(Vector3 position)
     {
-        var lowerCenter = GetLowerCenter();
-        target.transform.position = position - lowerCenter;
+        position.y += GetOffsetFromBottomToPivot(); 
+        target.transform.position = position;
     }
 
-    private Vector3 GetLowerCenter()
+    private float GetOffsetFromBottomToPivot()
+    {
+        var bounds = target.GetComponent<MeshFilter>().mesh.bounds;     
+        return (bounds.extents.y - bounds.center.y) * target.transform.localScale.y;
+    }
+
+    private void LocateOnTheCeiling(Vector3 position)
+    {
+        position.y -= GetOffsetFromPivotToTop();
+        target.transform.position = position;
+    }
+
+    private float GetOffsetFromPivotToTop()
     {
         var bounds = target.GetComponent<MeshFilter>().mesh.bounds;
-        var localScale = target.transform.localScale;
-        var temp = (bounds.center - new Vector3(0, bounds.extents.y, 0));
-        temp.y *= localScale.y;
-        return temp;
+        return (bounds.extents.y + bounds.center.y) * target.transform.localScale.y;
     }
 }
