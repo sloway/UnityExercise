@@ -11,7 +11,8 @@ public class Locator : MonoBehaviour
 
     private void Start()
     {
-        locator = new LocatorMeshFilter(target);
+        //locator = new LocatorMeshFilter(target);
+        locator = new LocatorCollider(target);
     }
 
     void Update()
@@ -101,11 +102,15 @@ public class LocatorCollider : Locator2
 
     public override void LocateOnTheCeiling(Vector3 position)
     {
-        throw new System.NotImplementedException();
+        Bounds bounds = target.GetComponent<Collider>().bounds;
+        position.y += target.transform.position.y - bounds.max.y;
+        target.transform.position = position;
     }
 
     public override void LocateOnTheFloor(Vector3 position)
     {
-        throw new System.NotImplementedException();
+        Bounds bounds = target.GetComponent<Collider>().bounds;
+        position.y += target.transform.position.y - bounds.min.y;
+        target.transform.position = position;
     }
 }
