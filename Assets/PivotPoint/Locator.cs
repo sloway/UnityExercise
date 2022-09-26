@@ -6,7 +6,15 @@ public class Locator : MonoBehaviour
 {
     [SerializeField]
     private GameObject target;
-        
+
+    private ILocator locator;
+
+    private void Start()
+    {
+        //locator = new LocatorMeshFilter(target);
+        locator = new LocatorCollider(target);
+    }
+
     void Update()
     {
         if(Input.GetMouseButtonDown(0))
@@ -17,11 +25,11 @@ public class Locator : MonoBehaviour
                 var hitObject = hit.collider.gameObject;
                 if(hitObject.name == "Ceiling")
                 {
-                    LocateOnTheCeiling(hit.point);
+                    locator.LocateOnTheCeiling(hit.point);
                 }
                 else if(hitObject.name == "Floor")
                 {
-                    LocateOnTheFloor(hit.point);
+                    locator.LocateOnTheFloor(hit.point);
                 }
                 else
                 {
@@ -30,28 +38,79 @@ public class Locator : MonoBehaviour
             }
         }
     }
+}
 
-    private void LocateOnTheFloor(Vector3 position)
+
+public interface ILocator
+{
+    void LocateOnTheCeiling(Vector3 position);
+    void LocateOnTheFloor(Vector3 position);
+}
+
+public abstract class Locator2 : ILocator
+{
+    protected GameObject target;
+
+    public Locator2(GameObject target)
     {
-        position.y += GetOffsetFromBottomToPivot(); 
+        this.target = target;
+    }
+
+    public abstract void LocateOnTheCeiling(Vector3 position);
+
+    public abstract void LocateOnTheFloor(Vector3 position);    
+}
+
+public class LocatorMeshFilter : Locator2
+{
+    public LocatorMeshFilter(GameObject target) : base(target)
+    {
+
+    }
+
+    public override void LocateOnTheCeiling(Vector3 position)
+    {
+        position.y -= GetOffsetFromPivotToTop(target);
         target.transform.position = position;
     }
 
-    private float GetOffsetFromBottomToPivot()
-    {
-        var bounds = target.GetComponent<MeshFilter>().sharedMesh.bounds;        
-        return (bounds.extents.y - bounds.center.y) * target.transform.localScale.y;
-    }
-
-    private void LocateOnTheCeiling(Vector3 position)
-    {
-        position.y -= GetOffsetFromPivotToTop();
-        target.transform.position = position;
-    }
-
-    private float GetOffsetFromPivotToTop()
+    private float GetOffsetFromPivotToTop(GameObject target)
     {
         var bounds = target.GetComponent<MeshFilter>().sharedMesh.bounds;
         return (bounds.center.y - (-bounds.extents.y)) * target.transform.localScale.y;
+    }
+
+    public override void LocateOnTheFloor(Vector3 position)
+    {
+        position.y += GetOffsetFromBottomToPivot(target);
+        target.transform.position = position;
+    }
+
+    private float GetOffsetFromBottomToPivot(GameObject target)
+    {
+        var bounds = target.GetComponent<MeshFilter>().sharedMesh.bounds;
+        return (bounds.extents.y - bounds.center.y) * target.transform.localScale.y;
+    }
+}
+
+public class LocatorCollider : Locator2
+{
+    public LocatorCollider(GameObject target) : base(target)
+    {
+
+    }
+
+    public override void LocateOnTheCeiling(Vector3 position)
+    {
+        Bounds bounds = target.GetComponent<Collider>().bounds;
+        position.y += target.transform.position.y - bounds.max.y;
+        target.transform.position = position;
+    }
+
+    public override void LocateOnTheFloor(Vector3 position)
+    {
+        Bounds bounds = target.GetComponent<Collider>().bounds;
+        position.y += target.transform.position.y - bounds.min.y;
+        target.transform.position = position;
     }
 }
